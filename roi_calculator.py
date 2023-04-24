@@ -11,21 +11,14 @@ class Rental_Roi():
             else:
                 self.clear()
                 self.calc_income()
-                self.calc_expenses()
-                self.calc_cash_flow()
-                # right here, I originally had all these self. ... calls in a line, one after the other. When I added
-                # the check for negative cashflow within calc_cash_flow, I originally had that method calling self.main_roi()
-                # if cashflow was negative. With this setup, this would split the app, I realized, into two states. The
-                # first state was asking to do a new ROI calculation, and the second state was still continuing on from the
-                # original branch, implementing calc_upfront_inv() next. This was bad. I thought I could move all these calls into their
-                # respective methods, so that we go from one method to the next from within the methods themselves instead
-                # of from here. Instead, I chose to create a flag in calc_cash_flow to try to fix this problem. I'd like to
-                # know how this sort of thing is typically handled in OOP. 
-                if self.negative_cashflow == 1:
+                self.do_expenses = 1
+                while self.do_expenses:
+                    self.calc_expenses()
+                    self.calc_cash_flow()
+                if self.negative_cashflow:
                     continue
-                else:
-                    self.calc_upfront_inv()
-                    self.calc_roi()
+                self.calc_upfront_inv()
+                self.calc_roi()
 
     def calc_income(self):
         self.income_mo = self.positive_number_input(-1, "Enter total monthly income in numbers, without commas or other symbols,\nincluding rent and other income from this property: ")
@@ -68,8 +61,11 @@ class Rental_Roi():
                 print("  Repairs and Capital Expenditures (yr): $",self.simplify_and_comma(self.repairs_and_capex*12))
                 print("  Other Costs (yr): $",self.simplify_and_comma(self.other_costs*12))
             print("Cash flow: $,", self.cash_flow_yr_str)
+            user_choice = input("Press 'y' to re-enter expenses, or 'n' to start over from the beginning: ")
+            self.do_expenses = 1 if "y" in user_choice else 0
             self.negative_cashflow = 1
         else:
+            self.do_expenses = 0
             self.negative_cashflow = 0
 
     def calc_upfront_inv(self):
